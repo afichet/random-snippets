@@ -36,6 +36,20 @@ int32_t ordered_float_to_int(float in)
 }
 
 
+float ordered_int_to_float(int32_t in)
+{
+    union { float f; int32_t i; } v;
+    v.i = in;
+
+    if (v.i < 0) {
+        v.i = ~((v.i - 1) & 0x7FFFFFFF);
+    }
+
+    return v.f;
+}
+
+
+
 // Just for testing...
 #include <iostream>
 #include <random>
@@ -51,7 +65,7 @@ int main(int argc, char* argv[])
         -std::numeric_limits<float>::max(),
         std::numeric_limits<float>::max()
         );
-    
+
     for (int i = 0; ; i++) {
         float fl1, fl2;
         fl1 = dis(gen);
@@ -61,6 +75,10 @@ int main(int argc, char* argv[])
         i1 = ordered_float_to_int(fl1);
         i2 = ordered_float_to_int(fl2);
 
+        float f1, f2;
+        f1 = ordered_int_to_float(i1);
+        f2 = ordered_int_to_float(i2);
+
         // Check if the comparison works the same
         if ((fl1 < fl2  && !(i1 < i2)) ||
             (fl1 > fl2  && !(i1 > i2)) ||
@@ -69,6 +87,12 @@ int main(int argc, char* argv[])
             std::cout << "Missmatch detected!" << std::endl;
             std::cout << fl1 << " " << fl2 << std::endl;
             std::cout << i1  << " " << i2  << std::endl;
+        }
+
+        if (f1 != fl1 || f2 != fl2) {
+            std::cout << "Wrong back conversion!" << std::endl;
+            std::cout << fl1 << "vs. " << f1 << std::endl;
+            std::cout << fl2 << "vs. " << f2 << std::endl;
         }
     }
 
